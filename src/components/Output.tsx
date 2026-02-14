@@ -18,7 +18,7 @@ function s(strings: TemplateStringsArray, ...values: unknown[]) {
 }
 
 export default function Output({ embed }: { embed: Embed }) {
-	const [language, setLanguage] = useState<"json" | "js" | "py" | "rs">("js");
+	const [language, setLanguage] = useState<"json" | "js" | "py" | "rs" | "jda">("js");
 	const [jsVersion, setJsVersion] = useState("14");
 	const [jsMode, setJsMode] = useState("chained");
 	const [rsMode, setRsMode] = useState("variable"); // variable or closure
@@ -246,6 +246,60 @@ export default function Output({ embed }: { embed: Embed }) {
 		} else {
 			output += `;\n\nlet msg = msg\n    .channel_id\n    .send_message(&ctx.http, |m| m.set_embed(embed))\n    .await;`;
 		}
+	} else if (language === "jda") {
+		output += "EmbedBuilder embed = new EmbedBuilder()\n";
+
+		const steps = [""];
+
+		if (embed.author.name || embed.author.url || embed.author.iconUrl) {
+			const args = [];
+			args.push(embed.author.name ? s`${embed.author.name}` : "null");
+			args.push(embed.author.url ? s`${embed.author.url}` : "null");
+			args.push(embed.author.iconUrl ? s`${embed.author.iconUrl}` : "null");
+			steps.push(`.setAuthor(${args.join(", ")})`);
+		}
+
+		if (embed.title && embed.url) {
+			steps.push(s`.setTitle(${embed.title}, ${embed.url})`);
+		} else if (embed.title) {
+			steps.push(s`.setTitle(${embed.title})`);
+		} else if (embed.url) {
+			steps.push(s`.setUrl(${embed.url})`);
+		}
+
+		if (embed.description)
+			steps.push(s`.setDescription(${embed.description})`);
+
+		if (embed.color)
+			steps.push(
+				`.setColor(Color.decode(${JSON.stringify(embed.color)}))`
+			);
+
+		if (embed.timestamp)
+			steps.push(`.setTimestamp(Instant.ofEpochMilli(${embed.timestamp}))`);
+
+		if (embed.fields.length > 0) {
+			for (const field of embed.fields) {
+				const name = s`${field.name}`;
+				const value = s`${field.value}`;
+				const inline = field.inline ? "true" : "false";
+				steps.push(`.addField(${name}, ${value}, ${inline})`);
+			}
+		}
+
+		if (embed.image) steps.push(s`.setImage(${embed.image})`);
+
+		if (embed.thumbnail) steps.push(s`.setThumbnail(${embed.thumbnail})`);
+
+		if (embed.footer.text || embed.footer.iconUrl) {
+			const args = [];
+			args.push(embed.footer.text ? s`${embed.footer.text}` : "null");
+			args.push(embed.footer.iconUrl ? s`${embed.footer.iconUrl}` : "null");
+			steps.push(`.setFooter(${args.join(", ")})`);
+		}
+
+		output += steps.join("\n    ");
+		output += ";\n\nchannel.sendMessageEmbeds(embed.build()).queue();";
 	}
 
 	return (
@@ -257,9 +311,10 @@ export default function Output({ embed }: { embed: Embed }) {
 					name="language"
 					id="language"
 					value={language}
-					onChange={e => setLanguage(e.target.value as "js" | "py")}
+					onChange={e => setLanguage(e.target.value as "js" | "py" | "jda" | "json" | "rs")}
 				>
 					<option value="json">JSON representation</option>
+					<option value="jda">JDA</option>
 					<option value="js">discord.js</option>
 					<option value="py">discord.py</option>
 					<option value="rs">serenity (rust)</option>
@@ -316,7 +371,7 @@ export default function Output({ embed }: { embed: Embed }) {
 			</div>
 
 			<Highlight
-				language={language === "json" ? "js" : language}
+				language={language === "json" || language === "jda" ? "js" : language}
 				className="rounded text-sm"
 			>
 				{output}
