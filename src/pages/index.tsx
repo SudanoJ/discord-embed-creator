@@ -568,12 +568,12 @@ export default function Home() {
 							Click the button below to copy a link to share your
 							embed.
 						</p>
-
+{/* 
 						<p className="mb-1">
 							The short link will be valid for one week.
-						</p>
+						</p> */}
 
-						<Copier
+						{/* <Copier
 							getContent={async () => {
 								const { id } = await fetch("/api/save", {
 									body: JSON.stringify({
@@ -596,11 +596,11 @@ export default function Home() {
 							timeout={30000}
 						>
 							Copy Short Link
-						</Copier>
+						</Copier> */}
 
-						<p className="mt-2 mb-1">
+						{/* <p className="mt-2 mb-1">
 							The permanent link contains all of your embed data.
-						</p>
+						</p> */}
 
 						<Copier
 							getContent={() =>
