@@ -233,7 +233,7 @@ export default function Home() {
 							Discord Embed Creator
 						</h1>
 						<a
-							href="https://github.com/cubedhuang/discord-embed-creator"
+							href="https://github.com/SudanoJ/discord-embed-creator"
 							target="_blank"
 							rel="noopener noreferrer"
 							className="hover:underline"
@@ -530,7 +530,7 @@ export default function Home() {
 						value={[footerIcon, setFooterIcon]}
 					/>
 					<div className="flex items-center gap-2">
-						<label htmlFor="timestamp">Timestamp?</label>
+						<label htmlFor="timestamp">Timestamp? (require icon or text)</label>
 						<input
 							type="checkbox"
 							id="timestamp"
